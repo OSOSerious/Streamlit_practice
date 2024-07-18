@@ -147,6 +147,7 @@ elif page == "Stocks":
 
 elif page == "Cryptocurrencies":
     # ... [Keep existing cryptocurrencies code] ...
+    pass
 
 elif page == "Market Trends":
     # ... [Keep existing market trends code] ...
