@@ -6,6 +6,7 @@ from plotly.subplots import make_subplots
 import base64
 from datetime import datetime, timedelta
 import requests
+import random
 
 # Set page config
 st.set_page_config(page_title="Cosmic Market Analyzer", layout="wide", initial_sidebar_state="expanded")
@@ -64,10 +65,7 @@ body {color: #FFFFFF;}
 """, unsafe_allow_html=True)
 
 # App title
-st.markdown("<h1 style='text-align: center; color: #00FFFF;'>Cosmic Market Analyzer</h1>", unsafe_allow_html=True)
-
-# Sidebar navigation
-page = st.sidebar.radio("Navigate", ["Stocks", "Cryptocurrencies", "Market Trends"])
+st.markdown("<h1 style='text-align: center; color: #00FFFF;'>Enhanced Cosmic Market Analyzer</h1>", unsafe_allow_html=True)
 
 # Function to load data
 @st.cache_data
@@ -92,7 +90,64 @@ def create_candlestick_chart(data, title):
     fig.update_yaxes(showgrid=False, zeroline=False)
     return fig
 
-if page == "Stocks":
+# Function for personalized financial goals
+def set_financial_goal():
+    st.subheader("Set Your Financial Goal")
+    goal_type = st.selectbox("Goal Type", ["Savings", "Debt Payoff", "Investment"])
+    goal_amount = st.number_input("Goal Amount ($)", min_value=0.0, format="%.2f")
+    goal_date = st.date_input("Target Date")
+    
+    if st.button("Set Goal"):
+        st.session_state.financial_goal = {
+            "type": goal_type,
+            "amount": goal_amount,
+            "date": goal_date,
+            "progress": 0
+        }
+        st.success("Goal set successfully!")
+
+# Function to display goal progress
+def show_goal_progress():
+    if "financial_goal" in st.session_state:
+        goal = st.session_state.financial_goal
+        st.subheader("Your Financial Goal")
+        progress = min(goal["progress"] / goal["amount"], 1.0)
+        st.progress(progress)
+        st.write(f"Goal: ${goal['amount']} for {goal['type']} by {goal['date']}")
+        st.write(f"Current Progress: ${goal['progress']:.2f}")
+
+# Function for educational resources
+def show_educational_resources():
+    st.subheader("Financial Education Resources")
+    resources = [
+        {"title": "Understanding Stock Markets", "url": "https://www.investopedia.com/articles/investing/082614/how-stock-market-works.asp"},
+        {"title": "Basics of Cryptocurrency", "url": "https://www.nerdwallet.com/article/investing/cryptocurrency-7-things-to-know"},
+        {"title": "Personal Finance 101", "url": "https://www.ramseysolutions.com/financial-peace/3-basics-of-personal-finance"},
+    ]
+    for resource in resources:
+        st.markdown(f"[{resource['title']}]({resource['url']})")
+
+# Function for personalized advice (simplified)
+def get_personalized_advice():
+    advice_list = [
+        "Consider diversifying your portfolio to reduce risk.",
+        "Regular investments, even small amounts, can lead to significant growth over time.",
+        "Stay informed about market trends, but avoid making impulsive decisions.",
+        "Consider setting aside an emergency fund for unexpected expenses.",
+        "Review your investment strategy periodically and adjust as needed.",
+    ]
+    return random.choice(advice_list)
+
+# Sidebar navigation
+page = st.sidebar.radio("Navigate", ["Dashboard", "Stocks", "Cryptocurrencies", "Market Trends", "Financial Goals", "Education"])
+
+if page == "Dashboard":
+    st.markdown("<h2 style='color: #00FFFF;'>Your Financial Dashboard</h2>", unsafe_allow_html=True)
+    show_goal_progress()
+    st.subheader("Personalized Advice")
+    st.info(get_personalized_advice())
+
+elif page == "Stocks":
     st.markdown("<h2 style='color: #00FFFF;'>Stock Analysis</h2>", unsafe_allow_html=True)
     
     ticker = st.text_input('Enter stock ticker', 'AAPL')
@@ -143,6 +198,13 @@ elif page == "Market Trends":
             change = current_value - previous_close
             change_percent = (change / previous_close) * 100
             st.metric(name, f"{current_value:.2f}", f"{change:.2f} ({change_percent:.2f}%)")
+
+elif page == "Financial Goals":
+    set_financial_goal()
+    show_goal_progress()
+
+elif page == "Education":
+    show_educational_resources()
 
 # Add a futuristic footer
 st.markdown(
