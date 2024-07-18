@@ -1,146 +1,149 @@
 import streamlit as st
 import yfinance as yf
 import pandas as pd
+import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
-from plotly.subplots import make_subplots
-import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
 from datetime import datetime, timedelta
 import requests
 from bs4 import BeautifulSoup
 
 # ... [Keep your existing imports and setup code] ...
 
-# Market Sentiment Analysis
-def market_sentiment():
-    st.subheader("Market Sentiment Analysis")
-    sentiment = random.choice(['Bullish', 'Bearish', 'Neutral'])
-    sentiment_score = random.uniform(-1, 1)
-    st.metric("Overall Market Sentiment", sentiment, f"{sentiment_score:.2f}")
+# AI-Powered Stock Predictions
+def ai_stock_prediction(ticker):
+    st.subheader(f"AI-Powered Prediction for {ticker}")
+    data = yf.download(ticker, start=datetime.now() - timedelta(days=365*2), end=datetime.now())
+    data['Prediction'] = data['Close'].shift(-1)
+    data = data.dropna()
     
-    fig = go.Figure(go.Indicator(
-        mode = "gauge+number",
-        value = sentiment_score,
-        domain = {'x': [0, 1], 'y': [0, 1]},
-        title = {'text': "Market Sentiment", 'font': {'size': 24}},
-        gauge = {
-            'axis': {'range': [-1, 1], 'tickwidth': 1, 'tickcolor': "darkblue"},
-            'bar': {'color': "darkblue"},
-            'bgcolor': "white",
-            'borderwidth': 2,
-            'bordercolor': "gray",
-            'steps': [
-                {'range': [-1, -0.5], 'color': 'red'},
-                {'range': [-0.5, 0.5], 'color': 'gray'},
-                {'range': [0.5, 1], 'color': 'green'}],
-            'threshold': {
-                'line': {'color': "red", 'width': 4},
-                'thickness': 0.75,
-                'value': sentiment_score}}))
+    X = np.array(data.drop(['Prediction'], 1))
+    Y = np.array(data['Prediction'])
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
+    
+    model = RandomForestRegressor().fit(X_train, Y_train)
+    prediction = model.predict(X_test)
+    
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=data.index[-len(X_test):], y=Y_test, name="Actual"))
+    fig.add_trace(go.Scatter(x=data.index[-len(X_test):], y=prediction, name="Predicted"))
     st.plotly_chart(fig)
 
-# Portfolio Simulator
-def portfolio_simulator():
-    st.subheader("Portfolio Simulator")
-    stocks = st.multiselect("Select stocks for your portfolio", ['AAPL', 'GOOGL', 'MSFT', 'AMZN', 'FB'])
-    weights = [st.slider(f"Weight for {stock}", 0.0, 1.0, 0.5) for stock in stocks]
+# Options Chain Analysis
+def options_chain_analysis(ticker):
+    st.subheader(f"Options Chain for {ticker}")
+    stock = yf.Ticker(ticker)
+    expirations = stock.options
     
-    if stocks and sum(weights) == 1.0:
-        start_date = st.date_input("Start Date", datetime.now() - timedelta(days=365))
-        end_date = st.date_input("End Date", datetime.now())
+    if expirations:
+        expiration = st.selectbox("Select expiration date", expirations)
+        opt = stock.option_chain(expiration)
         
-        portfolio_data = pd.DataFrame()
-        for stock, weight in zip(stocks, weights):
-            data = yf.download(stock, start=start_date, end=end_date)['Close']
-            portfolio_data[stock] = data * weight
+        calls = opt.calls
+        puts = opt.puts
         
-        portfolio_data['Total'] = portfolio_data.sum(axis=1)
-        portfolio_return = (portfolio_data['Total'][-1] / portfolio_data['Total'][0] - 1) * 100
+        st.write("Calls:")
+        st.dataframe(calls[['strike', 'lastPrice', 'volume', 'openInterest', 'impliedVolatility']])
         
-        st.line_chart(portfolio_data['Total'])
-        st.metric("Portfolio Return", f"{portfolio_return:.2f}%")
+        st.write("Puts:")
+        st.dataframe(puts[['strike', 'lastPrice', 'volume', 'openInterest', 'impliedVolatility']])
     else:
-        st.warning("Please select stocks and ensure weights sum to 1.0")
+        st.write("No options data available for this stock.")
 
-# Economic Calendar
-def economic_calendar():
-    st.subheader("Economic Calendar")
-    # This would typically use an API. For demonstration, we'll use dummy data.
-    events = [
-        {"date": "2023-07-20", "event": "ECB Interest Rate Decision", "impact": "High"},
-        {"date": "2023-07-21", "event": "US GDP Growth Rate", "impact": "High"},
-        {"date": "2023-07-22", "event": "Japan Inflation Rate", "impact": "Medium"},
-    ]
-    df = pd.DataFrame(events)
-    st.table(df)
-
-# News Sentiment Analysis
-def news_sentiment():
-    st.subheader("News Sentiment Analysis")
-    ticker = st.text_input("Enter stock ticker for news sentiment", "AAPL")
+# Social Media Sentiment Analysis
+def social_media_sentiment(ticker):
+    st.subheader(f"Social Media Sentiment for {ticker}")
+    # This would typically use an API to fetch real social media data
+    # For demonstration, we'll use dummy data
+    sentiments = ['Positive', 'Negative', 'Neutral']
+    sentiment_counts = np.random.randint(1, 100, size=3)
     
-    # This would typically use an API. For demonstration, we'll use dummy data.
-    news = [
-        {"title": f"Positive news about {ticker}", "sentiment": "Positive"},
-        {"title": f"Neutral news about {ticker}", "sentiment": "Neutral"},
-        {"title": f"Negative news about {ticker}", "sentiment": "Negative"},
-    ]
-    for item in news:
-        st.write(f"{item['title']} - Sentiment: {item['sentiment']}")
+    fig = px.pie(values=sentiment_counts, names=sentiments, title=f"{ticker} Social Media Sentiment")
+    st.plotly_chart(fig)
 
-# Correlation Matrix
-def correlation_matrix():
-    st.subheader("Asset Correlation Matrix")
-    tickers = st.multiselect("Select assets for correlation analysis", ['AAPL', 'GOOGL', 'MSFT', 'AMZN', 'FB', 'BTC-USD', 'ETH-USD'])
-    if tickers:
-        start_date = st.date_input("Start Date", datetime.now() - timedelta(days=365))
-        end_date = st.date_input("End Date", datetime.now())
-        
-        data = yf.download(tickers, start=start_date, end=end_date)['Close']
-        corr = data.corr()
-        
-        fig = px.imshow(corr, text_auto=True, aspect="auto")
-        st.plotly_chart(fig)
-
-# Technical Indicators
-def technical_indicators(data):
-    data['SMA20'] = data['Close'].rolling(window=20).mean()
-    data['SMA50'] = data['Close'].rolling(window=50).mean()
-    data['RSI'] = calculate_rsi(data['Close'])
-    return data
-
-def calculate_rsi(prices, period=14):
-    delta = prices.diff()
-    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
-    rs = gain / loss
-    return 100 - (100 / (1 + rs))
-
-# Alerts System
-def set_price_alert():
-    st.subheader("Set Price Alert")
-    ticker = st.text_input("Enter stock ticker", "AAPL")
-    target_price = st.number_input("Set target price", min_value=0.0)
-    alert_type = st.radio("Alert type", ["Above", "Below"])
+# Sector Performance Heatmap
+def sector_performance_heatmap():
+    st.subheader("Sector Performance Heatmap")
+    sectors = ['Technology', 'Healthcare', 'Financials', 'Consumer Discretionary', 'Industrials', 'Energy']
+    performance = np.random.uniform(-5, 5, size=len(sectors))
     
-    if st.button("Set Alert"):
-        # In a real app, this would be saved to a database
-        st.success(f"Alert set for {ticker} when price goes {'above' if alert_type == 'Above' else 'below'} ${target_price}")
+    fig = go.Figure(data=go.Heatmap(
+        z=[performance],
+        x=sectors,
+        y=['Performance'],
+        colorscale='RdYlGn'))
+    
+    st.plotly_chart(fig)
+
+# Volatility Analysis
+def volatility_analysis(ticker):
+    st.subheader(f"Volatility Analysis for {ticker}")
+    data = yf.download(ticker, start=datetime.now() - timedelta(days=365), end=datetime.now())
+    data['Returns'] = data['Close'].pct_change()
+    data['Volatility'] = data['Returns'].rolling(window=21).std() * np.sqrt(252) * 100
+    
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=data.index, y=data['Volatility'], name="21-Day Volatility"))
+    st.plotly_chart(fig)
+
+# Dividend Calendar
+def dividend_calendar():
+    st.subheader("Dividend Calendar")
+    # This would typically fetch real dividend data
+    # For demonstration, we'll use dummy data
+    dividends = [
+        {"Date": "2023-07-25", "Stock": "AAPL", "Dividend": "$0.24"},
+        {"Date": "2023-08-10", "Stock": "MSFT", "Dividend": "$0.68"},
+        {"Date": "2023-08-15", "Stock": "JNJ", "Dividend": "$1.13"},
+    ]
+    st.table(pd.DataFrame(dividends))
+
+# Insider Trading Tracker
+def insider_trading_tracker():
+    st.subheader("Recent Insider Trading")
+    # This would typically fetch real insider trading data
+    # For demonstration, we'll use dummy data
+    insider_trades = [
+        {"Date": "2023-07-15", "Insider": "John Doe", "Company": "AAPL", "Action": "Buy", "Shares": 1000},
+        {"Date": "2023-07-17", "Insider": "Jane Smith", "Company": "GOOGL", "Action": "Sell", "Shares": 500},
+        {"Date": "2023-07-20", "Insider": "Bob Johnson", "Company": "MSFT", "Action": "Buy", "Shares": 2000},
+    ]
+    st.table(pd.DataFrame(insider_trades))
+
+# Global Market Hours Tracker
+def global_market_hours():
+    st.subheader("Global Market Hours")
+    markets = {
+        "New York (NYSE)": {"Open": "9:30 AM", "Close": "4:00 PM", "Timezone": "ET"},
+        "London (LSE)": {"Open": "8:00 AM", "Close": "4:30 PM", "Timezone": "BST"},
+        "Tokyo (TSE)": {"Open": "9:00 AM", "Close": "3:00 PM", "Timezone": "JST"},
+        "Hong Kong (HKEX)": {"Open": "9:30 AM", "Close": "4:00 PM", "Timezone": "HKT"},
+    }
+    
+    for market, hours in markets.items():
+        st.write(f"{market}: {hours['Open']} - {hours['Close']} {hours['Timezone']}")
 
 # Modify the main app structure
-st.markdown("<h1 style='text-align: center; color: #00FFFF;'>Advanced Cosmic Market Analyzer</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #00FFFF;'>Elite Cosmic Market Analyzer</h1>", unsafe_allow_html=True)
 
 # Sidebar navigation
-page = st.sidebar.radio("Navigate", ["Dashboard", "Stocks", "Cryptocurrencies", "Market Trends", "Portfolio Simulator", "Economic Calendar", "Alerts"])
+page = st.sidebar.radio("Navigate", [
+    "Dashboard", "Stocks", "Cryptocurrencies", "Market Trends", "Portfolio Simulator", 
+    "Options Analysis", "Social Sentiment", "Sector Performance", "Volatility", 
+    "Dividends", "Insider Trading", "Global Markets"
+])
 
 if page == "Dashboard":
     market_sentiment()
     news_sentiment()
+    sector_performance_heatmap()
 
 elif page == "Stocks":
-    # ... [Keep existing stocks code and add technical indicators] ...
-    data = technical_indicators(data)
-    # Update your chart to include new indicators
+    ticker = st.text_input("Enter stock ticker", "AAPL")
+    ai_stock_prediction(ticker)
+    volatility_analysis(ticker)
 
 elif page == "Cryptocurrencies":
     # ... [Keep existing cryptocurrencies code] ...
@@ -152,10 +155,28 @@ elif page == "Market Trends":
 elif page == "Portfolio Simulator":
     portfolio_simulator()
 
-elif page == "Economic Calendar":
-    economic_calendar()
+elif page == "Options Analysis":
+    ticker = st.text_input("Enter stock ticker for options analysis", "AAPL")
+    options_chain_analysis(ticker)
 
-elif page == "Alerts":
-    set_price_alert()
+elif page == "Social Sentiment":
+    ticker = st.text_input("Enter stock ticker for social sentiment", "AAPL")
+    social_media_sentiment(ticker)
+
+elif page == "Sector Performance":
+    sector_performance_heatmap()
+
+elif page == "Volatility":
+    ticker = st.text_input("Enter stock ticker for volatility analysis", "AAPL")
+    volatility_analysis(ticker)
+
+elif page == "Dividends":
+    dividend_calendar()
+
+elif page == "Insider Trading":
+    insider_trading_tracker()
+
+elif page == "Global Markets":
+    global_market_hours()
 
 # ... [Keep the existing footer] ...
