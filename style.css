@@ -10,65 +10,105 @@ body {
     background-color: rgba(0,0,0,0.7);
 }
 
-.stButton>button {
+.stButton > button {
     color: #00FFFF;
     border-radius: 20px;
     border: 2px solid #FF00FF;
     background-color: rgba(0,0,0,0.5);
 }
 
-.stTextInput>div>div>input {
+.stTextInput > div > div > input {
     color: #00FFFF;
     background-color: rgba(0,0,0,0.5);
     border: 2px solid #FF00FF;
     border-radius: 20px;
 }
 
-.stSelectbox>div>div>select {
+.stSelectbox > div > div > select {
     color: #00FFFF;
     background-color: rgba(0,0,0,0.5);
     border: 2px solid #FF00FF;
     border-radius: 20px;
 }
 
-.stDateInput>div>div>input {
+.stDateInput > div > div > input {
     color: #00FFFF;
     background-color: rgba(0,0,0,0.5);
     border: 2px solid #FF00FF;
     border-radius: 20px;
 }
 
-.stProgress>div>div>div>div {
-    background-color: #FF00FF;
+.stSlider > div > div > div > div {
+    color: #FF00FF;
+}
+
+.stMultiSelect > div > div > div {
+    background-color: rgba(0,0,0,0.5);
+    color: #00FFFF;
+}
+
+.stMultiSelect > div > div > div:hover {
+    background-color: rgba(255,0,255,0.2);
+}
+
+.stMultiSelect > div[data-baseweb="tag"] {
+    background-color: rgba(0,255,255,0.2);
 }
 
 .stDataFrame {
     background-color: rgba(0,0,0,0.5);
 }
 
-div.stSlider > div[data-baseweb = "slider"] > div > div {
-    background-color: #FF00FF !important;
-}
-
-div.stSlider > div[data-baseweb = "slider"] > div > div > div {
-    color: #00FFFF !important;
-}
-
-.stMetric {
+div[data-testid="stMetricValue"] {
+    color: #00FFFF;
     background-color: rgba(0,0,0,0.5);
-    border: 2px solid #FF00FF;
-    border-radius: 20px;
     padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #FF00FF;
 }
 
-.stMetric .metric-label {
+div[data-testid="stMetricDelta"] {
     color: #FF00FF;
 }
 
-.stMetric .metric-value {
-    color: #00FFFF;
+.stPlotlyChart {
+    background-color: rgba(0,0,0,0.5);
 }
 
-.stMetric .metric-delta {
-    color: #FF8C00;
+a {
+    color: #FF00FF;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #00FFFF;
+    text-decoration: underline;
+}
+
+.stMarkdown {
+    background-color: rgba(0,0,0,0.5);
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.stExpander {
+    border: 1px solid #FF00FF;
+    border-radius: 10px;
+}
+
+.stExpander > div[role="button"] {
+    color: #00FFFF;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.stWarning {
+    background-color: rgba(255,165,0,0.2);
+    color: #FFFFFF;
+    border: 1px solid #FFA500;
+}
+
+.stError {
+    background-color: rgba(255,0,0,0.2);
+    color: #FFFFFF;
+    border: 1px solid #FF0000;
 }
