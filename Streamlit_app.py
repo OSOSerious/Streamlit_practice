@@ -3,98 +3,135 @@ import yfinance as yf
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import base64
 
 # Set page config
-st.set_page_config(page_title="Cosmic Stock Analyzer", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Cosmic Market Analyzer", layout="wide", initial_sidebar_state="expanded")
 
-# Custom CSS
-def local_css(file_name):
-    with open(file_name, "r") as f:
-        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+# Function to add background image
+def add_bg_from_local(image_file):
+    with open(image_file, "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read())
+    st.markdown(
+    f"""
+    <style>
+    .stApp {{
+        background-image: url(data:image/jpeg;base64,{encoded_string.decode()});
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+    )
 
-local_css("style.css")
+# Add background image
+add_bg_from_local(r"C:\Users\Administrator.MSI\Desktop\appbackground.jpeg")
 
 # App title
-st.markdown("<h1 style='text-align: center; color: #00FFFF;'>Cosmic Stock Analyzer</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #00FFFF;'>Cosmic Market Analyzer</h1>", unsafe_allow_html=True)
 
-# Sidebar
-with st.sidebar:
-    st.markdown("<h3 style='text-align: center; color: #FF00FF;'>Control Panel</h3>", unsafe_allow_html=True)
+# Sidebar navigation
+page = st.sidebar.radio("Navigate", ["US Stocks", "Cryptocurrencies", "Market Trends"])
+
+if page == "US Stocks":
+    st.header("US Stock Analysis")
+    
+    # Stock input
     ticker = st.text_input('Enter stock ticker', 'AAPL')
     start_date = st.date_input('Start date', pd.to_datetime('2021-01-01'))
     end_date = st.date_input('End date', pd.to_datetime('today'))
-    timeframe = st.selectbox('Select timeframe', ['1d', '1wk', '1mo'])
 
-# Function to load data
-@st.cache_data
-def load_data(ticker, start, end, timeframe):
-    try:
-        data = yf.download(ticker, start, end, interval=timeframe)
-        data.reset_index(inplace=True)
-        return data
-    except Exception as e:
-        st.error(f"Error fetching data: {e}")
-        return None
+    @st.cache_data
+    def load_stock_data(ticker, start, end):
+        try:
+            data = yf.download(ticker, start, end)
+            data.reset_index(inplace=True)
+            return data
+        except Exception as e:
+            st.error(f"Error fetching stock data: {e}")
+            return None
 
-# Fetch data
-data = load_data(ticker, start_date, end_date, timeframe)
+    data = load_stock_data(ticker, start_date, end_date)
 
-if data is not None and not data.empty:
-    # Display data in an expander
-    with st.expander("View Raw Data"):
-        st.dataframe(data.tail(), use_container_width=True)
+    if data is not None and not data.empty:
+        # Create stock chart
+        fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.03, row_heights=[0.7, 0.3])
+        fig.add_trace(go.Candlestick(x=data['Date'], open=data['Open'], high=data['High'], low=data['Low'], close=data['Close'], name='Price'), row=1, col=1)
+        fig.add_trace(go.Bar(x=data['Date'], y=data['Volume'], name='Volume'), row=2, col=1)
+        fig.update_layout(title=f'{ticker} Stock Analysis', height=600, showlegend=False)
+        st.plotly_chart(fig, use_container_width=True)
 
-    # Calculate additional metrics
-    data['Returns'] = data['Close'].pct_change()
-    data['SMA20'] = data['Close'].rolling(window=20).mean()
-    data['SMA50'] = data['Close'].rolling(window=50).mean()
+        # Display metrics
+        st.subheader("Key Metrics")
+        current_price = data['Close'].iloc[-1]
+        price_change = data['Close'].iloc[-1] - data['Close'].iloc[-2]
+        price_change_percent = (price_change / data['Close'].iloc[-2]) * 100
+        st.metric("Current Price", f"${current_price:.2f}", f"{price_change:.2f} ({price_change_percent:.2f}%)")
 
-    # Create interactive chart
-    fig = make_subplots(rows=2, cols=1, shared_xaxes=True, 
-                        vertical_spacing=0.03, row_heights=[0.7, 0.3])
+elif page == "Cryptocurrencies":
+    st.header("Cryptocurrency Analysis")
+    
+    # Crypto input
+    crypto = st.text_input('Enter cryptocurrency symbol', 'BTC-USD')
+    crypto_start_date = st.date_input('Start date', pd.to_datetime('2021-01-01'))
+    crypto_end_date = st.date_input('End date', pd.to_datetime('today'))
 
-    # Price and SMA lines
-    fig.add_trace(go.Scatter(x=data['Date'], y=data['Close'], name='Close Price', line=dict(color='#00FFFF')), row=1, col=1)
-    fig.add_trace(go.Scatter(x=data['Date'], y=data['SMA20'], name='SMA20', line=dict(color='#FF00FF')), row=1, col=1)
-    fig.add_trace(go.Scatter(x=data['Date'], y=data['SMA50'], name='SMA50', line=dict(color='#FF8C00')), row=1, col=1)
+    @st.cache_data
+    def load_crypto_data(crypto, start, end):
+        try:
+            data = yf.download(crypto, start, end)
+            data.reset_index(inplace=True)
+            return data
+        except Exception as e:
+            st.error(f"Error fetching crypto data: {e}")
+            return None
 
-    # Volume bars
-    fig.add_trace(go.Bar(x=data['Date'], y=data['Volume'], name='Volume', marker_color='rgba(0, 255, 255, 0.5)'), row=2, col=1)
+    crypto_data = load_crypto_data(crypto, crypto_start_date, crypto_end_date)
 
-    # Update layout
-    fig.update_layout(
-        title=f'{ticker} Stock Analysis',
-        height=800,
-        showlegend=True,
-        paper_bgcolor='rgba(0,0,0,0.5)',
-        plot_bgcolor='rgba(0,0,0,0.3)',
-        font=dict(color='#FFFFFF'),
-    )
-    fig.update_xaxes(title_text="Date", row=2, col=1, showgrid=False, gridcolor='rgba(255,255,255,0.1)')
-    fig.update_yaxes(title_text="Price", row=1, col=1, showgrid=False, gridcolor='rgba(255,255,255,0.1)')
-    fig.update_yaxes(title_text="Volume", row=2, col=1, showgrid=False, gridcolor='rgba(255,255,255,0.1)')
+    if crypto_data is not None and not crypto_data.empty:
+        # Create crypto chart
+        fig = go.Figure(data=[go.Candlestick(x=crypto_data['Date'],
+                        open=crypto_data['Open'],
+                        high=crypto_data['High'],
+                        low=crypto_data['Low'],
+                        close=crypto_data['Close'])])
+        fig.update_layout(title=f'{crypto} Price', xaxis_title='Date', yaxis_title='Price (USD)')
+        st.plotly_chart(fig, use_container_width=True)
 
-    st.plotly_chart(fig, use_container_width=True)
+        # Display metrics
+        st.subheader("Key Metrics")
+        current_price = crypto_data['Close'].iloc[-1]
+        price_change = crypto_data['Close'].iloc[-1] - crypto_data['Close'].iloc[-2]
+        price_change_percent = (price_change / crypto_data['Close'].iloc[-2]) * 100
+        st.metric("Current Price", f"${current_price:.2f}", f"{price_change:.2f} ({price_change_percent:.2f}%)")
 
-    # Display performance metrics
-    st.markdown("<h3 style='text-align: center; color: #FF00FF;'>Performance Metrics</h3>", unsafe_allow_html=True)
-    total_return = (data['Close'].iloc[-1] / data['Close'].iloc[0] - 1) * 100
-    volatility = data['Returns'].std() * (252 ** 0.5) * 100  # Annualized volatility
-
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric("Total Return", f"{total_return:.2f}%", delta=f"{total_return:.2f}%", delta_color="normal")
-    with col2:
-        st.metric("Annualized Volatility", f"{volatility:.2f}%")
-
-else:
-    st.warning("No data available for the selected ticker and date range.")
+elif page == "Market Trends":
+    st.header("Market Trends")
+    
+    # Here you would typically integrate with a market trends API or data source
+    st.write("Market trend analysis coming soon!")
+    
+    # Placeholder for market trends
+    st.subheader("Major Indices")
+    indices = ['^GSPC', '^DJI', '^IXIC']
+    index_names = ['S&P 500', 'Dow Jones', 'NASDAQ']
+    
+    for idx, name in zip(indices, index_names):
+        data = yf.download(idx, period="1d")
+        if not data.empty:
+            current_value = data['Close'].iloc[-1]
+            previous_close = data['Close'].iloc[-2] if len(data) > 1 else data['Open'].iloc[-1]
+            change = current_value - previous_close
+            change_percent = (change / previous_close) * 100
+            st.metric(name, f"{current_value:.2f}", f"{change:.2f} ({change_percent:.2f}%)")
 
 # Add a futuristic footer
 st.markdown(
     """
     <div style='position: fixed; bottom: 0; left: 0; right: 0; text-align: center; padding: 10px; background-color: rgba(0,0,0,0.5);'>
-        <p style='color: #00FFFF;'>Powered by Cosmic AI • Real-time Galactic Market Analysis • &copy; 2024 Cosmic Stock Analyzer</p>
+        <p style='color: #00FFFF;'>Powered by Cosmic AI • Real-time Galactic Market Analysis • &copy; 2024 Cosmic Market Analyzer</p>
     </div>
     """,
     unsafe_allow_html=True
