@@ -25,11 +25,11 @@ Clone the repository:
 
 bash
 Copy code
-git clone https://github.com/your-username/cosmic-market-analyzer.git
+
 cd cosmic-market-analyzer
 Install the required packages:
 
-bash
+bash https://github.com/OSOSerious/Streamlit_practice/
 Copy code
 pip install streamlit yfinance pandas plotly requests
 Place your background image (appbackground.jpeg) in the directory where main.py is located.
