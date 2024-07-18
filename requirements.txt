@@ -5,4 +5,4 @@ numpy
 plotly
 requests
 beautifulsoup4
-sklearn
+scikit-learn
