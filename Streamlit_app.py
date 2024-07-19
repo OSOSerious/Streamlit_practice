@@ -9,13 +9,18 @@ from sklearn.ensemble import RandomForestRegressor
 from datetime import datetime, timedelta
 import requests
 from bs4 import BeautifulSoup
+
 def market_sentiment():
-   pass
+   st.write("Market sentiment analysis placeholder")
 
 def news_sentiment():
-    pass
+    st.write("News sentiment analysis placeholder")
 
-# ... [Keep your existing imports and setup code] ...
+def correlation_matrix():
+    st.write("Correlation matrix placeholder")
+
+def portfolio_simulator():
+    st.write("Portfolio simulator placeholder")
 
 # AI-Powered Stock Predictions
 def ai_stock_prediction(ticker):
@@ -60,8 +65,6 @@ def options_chain_analysis(ticker):
 # Social Media Sentiment Analysis
 def social_media_sentiment(ticker):
     st.subheader(f"Social Media Sentiment for {ticker}")
-    # This would typically use an API to fetch real social media data
-    # For demonstration, we'll use dummy data
     sentiments = ['Positive', 'Negative', 'Neutral']
     sentiment_counts = np.random.randint(1, 100, size=3)
     
@@ -96,8 +99,6 @@ def volatility_analysis(ticker):
 # Dividend Calendar
 def dividend_calendar():
     st.subheader("Dividend Calendar")
-    # This would typically fetch real dividend data
-    # For demonstration, we'll use dummy data
     dividends = [
         {"Date": "2023-07-25", "Stock": "AAPL", "Dividend": "$0.24"},
         {"Date": "2023-08-10", "Stock": "MSFT", "Dividend": "$0.68"},
@@ -108,8 +109,6 @@ def dividend_calendar():
 # Insider Trading Tracker
 def insider_trading_tracker():
     st.subheader("Recent Insider Trading")
-    # This would typically fetch real insider trading data
-    # For demonstration, we'll use dummy data
     insider_trades = [
         {"Date": "2023-07-15", "Insider": "John Doe", "Company": "AAPL", "Action": "Buy", "Shares": 1000},
         {"Date": "2023-07-17", "Insider": "Jane Smith", "Company": "GOOGL", "Action": "Sell", "Shares": 500},
@@ -122,7 +121,7 @@ def global_market_hours():
     st.subheader("Global Market Hours")
     markets = {
         "New York (NYSE)": {"Open": "9:30 AM", "Close": "4:00 PM", "Timezone": "ET"},
-        "London (LSE)": {"Open": "8:00 AM", "Close": "4:30 PM", 0"Timezone": "BST"},
+        "London (LSE)": {"Open": "8:00 AM", "Close": "4:30 PM", "Timezone": "BST"},
         "Tokyo (TSE)": {"Open": "9:00 AM", "Close": "3:00 PM", "Timezone": "JST"},
         "Hong Kong (HKEX)": {"Open": "9:30 AM", "Close": "4:00 PM", "Timezone": "HKT"},
     }
@@ -151,11 +150,9 @@ elif page == "Stocks":
     volatility_analysis(ticker)
 
 elif page == "Cryptocurrencies":
-    # ... [Keep existing cryptocurrencies code] ...
-    pass
+    st.write("Cryptocurrency analysis placeholder")
 
 elif page == "Market Trends":
-    # ... [Keep existing market trends code] ...
     correlation_matrix()
 
 elif page == "Portfolio Simulator":
@@ -185,4 +182,11 @@ elif page == "Insider Trading":
 elif page == "Global Markets":
     global_market_hours()
 
-# ... [Keep the existing footer] ...
+st.markdown(
+    """
+    <div style='position: fixed; bottom: 0; left: 0; right: 0; text-align: center; padding: 10px; background-color: rgba(0,0,0,0.7);'>
+        <p style='color: #00FFFF;'>Powered by Cosmic AI • Real-time Galactic Market Analysis • &copy; 2024 Cosmic Market Analyzer</p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
