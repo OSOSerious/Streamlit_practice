@@ -9,6 +9,11 @@ from sklearn.ensemble import RandomForestRegressor
 from datetime import datetime, timedelta
 import requests
 from bs4 import BeautifulSoup
+def market_sentiment():
+   pass
+
+def news_sentiment():
+    pass
 
 # ... [Keep your existing imports and setup code] ...
 
@@ -117,7 +122,7 @@ def global_market_hours():
     st.subheader("Global Market Hours")
     markets = {
         "New York (NYSE)": {"Open": "9:30 AM", "Close": "4:00 PM", "Timezone": "ET"},
-        "London (LSE)": {"Open": "8:00 AM", "Close": "4:30 PM", "Timezone": "BST"},
+        "London (LSE)": {"Open": "8:00 AM", "Close": "4:30 PM", 0"Timezone": "BST"},
         "Tokyo (TSE)": {"Open": "9:00 AM", "Close": "3:00 PM", "Timezone": "JST"},
         "Hong Kong (HKEX)": {"Open": "9:30 AM", "Close": "4:00 PM", "Timezone": "HKT"},
     }
