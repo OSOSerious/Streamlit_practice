@@ -1,6 +1,6 @@
 body {
     color: #FFFFFF;
-    background-image: url('C:/Users/Administrator.MSI/Desktop/appbackground.jpeg');
+    background-image: url(appbackground.jpeg);
     background-size: cover;
     background-repeat: no-repeat;
     background-attachment: fixed;
